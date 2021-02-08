@@ -1,0 +1,9 @@
+.dark-gray-backcolor{
+    -fx-background-color:#424242;
+}
+.light-gray-backcolor{
+    -fx-background-color:#BDBDBD;
+}
+.radius{
+    -fx-background-radius:20px;
+}

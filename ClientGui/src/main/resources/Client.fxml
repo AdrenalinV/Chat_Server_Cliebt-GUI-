@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" styleClass="dark-gray-backcolor" stylesheets="@client.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientControler">
+   <children>
+      <VBox prefHeight="600.0" prefWidth="163.0">
+         <children>
+            <Label text="Server" textFill="WHITESMOKE">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </Label>
+            <TextField fx:id="fxServer" styleClass="radius" stylesheets="@client.css" text="localhost">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </TextField>
+            <Label text="Port" textFill="WHITESMOKE">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </Label>
+            <TextField fx:id="fxPort" styleClass="radius" stylesheets="@client.css" text="8189">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </TextField>
+            <Label text=" Nick Name" textFill="WHITESMOKE">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </Label>
+            <TextField fx:id="fxNickName" styleClass="radius" stylesheets="@client.css" text="nickName">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </TextField>
+            <HBox alignment="CENTER_RIGHT" prefHeight="40.0" prefWidth="163.0">
+               <children>
+                  <Button fx:id="fxBtnConnect" mnemonicParsing="false" onAction="#getConnect" styleClass="radius" stylesheets="@client.css" text="Connect">
+                     <HBox.margin>
+                        <Insets bottom="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+         </children></VBox>
+      <VBox HBox.hgrow="ALWAYS">
+         <ListView fx:id="listView" onMouseClicked="#getNic" prefHeight="620.0" prefWidth="407.0" VBox.vgrow="ALWAYS">
+            <VBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </VBox.margin>
+         </ListView>
+         <HBox prefHeight="107.0" prefWidth="350.0">
+            <children>
+               <TextField fx:id="textMessag" onKeyPressed="#onKeyPress" HBox.hgrow="ALWAYS">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin></TextField>
+               <VBox alignment="CENTER" prefWidth="75.0" HBox.hgrow="NEVER">
+                  <children>
+                     <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#sendMsg" prefWidth="75.0" styleClass="radius" text="Send" textAlignment="CENTER" VBox.vgrow="NEVER" />
+                  </children>
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin>
+               </VBox>
+            </children>
+         </HBox>
+         <HBox.margin>
+            <Insets left="10.0" />
+         </HBox.margin>
+      </VBox>
+   </children>
+</HBox>

@@ -11,7 +11,10 @@
     <modules>
         <module>ClientGui</module>
         <module>serverChat</module>
+<<<<<<< HEAD
         <module>CoreMsg</module>
+=======
+>>>>>>> 80e527c (set up progect)
     </modules>
 
     <properties>

@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>serverChat</artifactId>
+<<<<<<< HEAD
     <dependencies>
         <dependency>
             <groupId>GB.ru</groupId>
@@ -36,6 +37,8 @@
         </dependency>
 
     </dependencies>
+=======
+>>>>>>> 80e527c (set up progect)
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

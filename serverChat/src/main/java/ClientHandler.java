@@ -1,62 +1,90 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
     private final ServerChat server;
     private final Socket socket;
-    private DataOutputStream out;
-    private DataInputStream in;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
     private String nickName;
-    private static int id = 0;
 
     public ClientHandler(ServerChat server, Socket socket) {
         this.server = server;
         this.socket = socket;
-        id++;
-        nickName = "user_" + id;
     }
 
     @Override
     public void run() {
         try {
-            out = new DataOutputStream(socket.getOutputStream());
-            in = new DataInputStream(socket.getInputStream());
-            out.writeUTF("/info");                  //Запрос ника от клиента
-            out.flush();
-            String tmpNick = in.readUTF();
-            if (!tmpNick.equals("nickName")) {          // если не значение по умолчанию
-                nickName = tmpNick + "_" + id;
-            }
-            System.out.printf("[DEBUG] client: %S start processing\n", nickName);
-            server.broadCastMessage(nickName + ": entered the chat.");
+            Object msg;
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+            authentication();
             while (true) {
-                String msg = in.readUTF();
-                if (msg.equals("/quit")) {              // отправка при закрытие клиента
-                    out.writeUTF(msg);
+                msg = in.readObject();
+                if (msg instanceof QuitRequest) {              // отправка при закрытие клиента
+                    out.writeObject(msg);
                     out.flush();
-                    server.broadCastMessage(nickName + ": exit chat.");
-                } else if (msg.startsWith("/w")) {      // Приватные сообщения
-                    String[] tmp = msg.split(" ", 3);
-                    server.privateSendMessage(this.nickName, tmp[1], this.nickName + " to " + tmp[1] + ": " + tmp[2]);
-                } else {
-                    server.broadCastMessage(nickName + ": " + msg);
+                } else if (msg instanceof TextMessage) {      //  сообщения
+                    TextMessage tMSG = (TextMessage) msg;
+                    if (tMSG.getRecipient() != null) {
+                        server.privateSendMessage(tMSG);
+                    } else {
+                        server.broadCastMessage(tMSG);
+                    }
                 }
             }
-        } catch (IOException ioException) {
+        } catch (ClassNotFoundException | IOException ioException) {
             System.err.println("Handled connection was broken");
-            server.removeClient(this);
+            try {
+                server.removeClient(this);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    public void authentication() throws IOException, ClassNotFoundException {
+        Object msg = new AuthenticationRequest();
+        out.writeObject(msg);
+        out.flush();
+        while (true) {
+            msg = in.readObject();
+            if (msg instanceof AuthenticationRequest) {
+                AuthenticationRequest aMSG = (AuthenticationRequest) msg;
+                String nick = server.getAuthService().getNickByLoginPass(aMSG.getLogin(), aMSG.getPass());
+                if (nick != null) {
+                    if (!server.isNickBusy(nick)) {
+                        aMSG.setNick(nick);
+                        aMSG.setStat(true);
+                        out.writeObject(aMSG);
+                        out.flush();
+                        nickName = nick;
+                        server.addClient(this);
+                        return;
+                    } else {
+                        sendMsg(TextMessage.of("Service", "Учетная запись уже используется"));
+                        sendMsg(aMSG);
+
+                    }
+                } else {
+                    sendMsg(TextMessage.of("Service", "Неверные логин/пароль"));
+                    sendMsg(aMSG);
+                }
+            }
+        }
+    }
+
+
     // отпрвка сообщения текущему пользователю
-    public void sendMsg(String msg) throws IOException {
-        out.writeUTF(msg);
+    public void sendMsg(Object msg) throws IOException {
+        out.writeObject(msg);
         out.flush();
     }
 
-    // Получение ника
     public String getNickName() {
         return nickName;
     }

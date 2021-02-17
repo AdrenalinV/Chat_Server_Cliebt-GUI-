@@ -1,16 +1,14 @@
 
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 
 public class Network {
     private static int port = 8189;
     private static String server = "localhost";
     private final Socket socket;
-    private final DataInputStream in;
-    private final DataOutputStream out;
+    private final ObjectInputStream in;
+    private final ObjectOutputStream out;
     private static Network instance;
 
     public static Network getInstance() {
@@ -37,17 +35,17 @@ public class Network {
 
     private Network() throws IOException {
         socket = new Socket(server, port);
-        out = new DataOutputStream(socket.getOutputStream());
-        in = new DataInputStream(socket.getInputStream());
+        out = new ObjectOutputStream(socket.getOutputStream());
+        in = new ObjectInputStream(socket.getInputStream());
     }
 
-    public void writeMessage(String msg) throws IOException {
-        out.writeUTF(msg);
+    public void sending(AbstractMSG msg) throws IOException {
+        out.writeObject(msg);
         out.flush();
     }
 
-    public String readMessage() throws IOException {
-        return in.readUTF();
+    public AbstractMSG readMessage() throws ClassNotFoundException, IOException {
+        return (AbstractMSG) in.readObject();
 
     }
 

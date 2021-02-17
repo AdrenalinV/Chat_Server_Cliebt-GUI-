@@ -1,25 +1,46 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class ServerChat {
     private static final int DEFAULT_PORT = 8189;
     private final ConcurrentLinkedDeque<ClientHandler> clients;
+    private final AuthService authService;
+
+    public AuthService getAuthService() {
+        return authService;
+    }
+
 
     public ServerChat(int port) {
+        authService = new BaseAuthService();
+        authService.start();
         clients = new ConcurrentLinkedDeque<>();
         try (ServerSocket server = new ServerSocket(port)) {
             while (true) {
                 Socket socket = server.accept();
                 System.out.println("[DEBUG] Client accepted");
                 ClientHandler handler = new ClientHandler(this, socket);
-                addClient(handler);
                 new Thread(handler).start();
             }
         } catch (IOException e) {
             System.err.println("Server was broken");
+        } finally {
+            if (authService != null) {
+                authService.stop();
+            }
         }
+    }
+
+    public boolean isNickBusy(String nick) {
+        for (ClientHandler o : clients) {
+            if (o.getNickName().equals(nick)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -36,30 +57,39 @@ public class ServerChat {
     }
 
     // удаление клиента
-    public void removeClient(ClientHandler clientHandler) {
+    public void removeClient(ClientHandler clientHandler) throws IOException {
         clients.remove(clientHandler);
         System.out.println("[DEBUG] client removed from broadcast server");
+        ArrayList<String> users = new ArrayList<>();
+        for (ClientHandler o : clients) {
+            users.add(o.getNickName());
+        }
+        broadCastMessage(new UserListMSG(users));
     }
 
     // добавление клиента
-    public void addClient(ClientHandler clientHandler) {
+    public void addClient(ClientHandler clientHandler) throws IOException {
         clients.add(clientHandler);
+        ArrayList<String> users = new ArrayList<>();
+        for (ClientHandler o : clients) {
+            users.add(o.getNickName());
+        }
+        broadCastMessage(new UserListMSG(users));
     }
 
     // Общие сообщения
-    public void broadCastMessage(String msg) throws IOException {
+    public void broadCastMessage(Object msg) throws IOException {
         for (ClientHandler client : clients) {
             client.sendMsg(msg);
         }
     }
 
     // Приватные сообщения
-    public void privateSendMessage(String sender, String recipient, String msg) throws IOException {
+    public void privateSendMessage(TextMessage msg) throws IOException {
         for (ClientHandler client : clients) {
-            if (client.getNickName().equals(sender) || client.getNickName().equals(recipient)) {
+            if (client.getNickName().equals(msg.getSender()) || client.getNickName().equals(msg.getRecipient())) {
                 client.sendMsg(msg);
             }
         }
     }
-
 }

@@ -11,14 +11,14 @@ public class ClientApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("Client.fxml"));
         primaryStage.setTitle("Чат");
-        primaryStage.setScene(new Scene(root, 600, 400));
+        primaryStage.setScene(new Scene(root));
         primaryStage.show();
         primaryStage.setOnCloseRequest(request -> {
             try {
                 System.out.println("[DEBUG] disconnect");
                 Network network = Network.getInstance();
                 if (network != null) {
-                    network.writeMessage("/quit");
+                    network.sending(new QuitRequest());
                 }
             } catch (IOException ioException) {
                 ioException.printStackTrace();

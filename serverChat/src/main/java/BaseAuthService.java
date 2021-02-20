@@ -1,4 +1,11 @@
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,25 +14,71 @@ interface AuthService {
 
     String getNickByLoginPass(String login, String pass);
 
+    void createUser(String userName, String plainUserPassword);
+
     void stop();
 }
 
 public class BaseAuthService implements AuthService {
+    /*CREATE TABLE IF NOT EXISTS users
+    (id INTEGER  PRIMARY KEY AUTOINCREMENT NOT NULL,
+    login TEXT UNIQUE NOT NULL,
+    pass TEXT NOT NULL,
+    nickName TEXT UNIQUE NOT NULL);*/
+    private static final String ADD_USER = "INSERT INTO users(login, pass, nickName) VALUES (?, ?, ?)";
+    private static final String GET_NICK_BY_LOGIN_PASS = "SELECT nickName FROM users WHERE login=? AND pass=?";
+    private static final String SUPER_SECRET_SALT = "MY_MOM_MAKES_COFFEE";
 
-    private class Entry {
-        private String login;
-        private String pass;
-        private String nick;
-
-        public Entry(String login, String pass, String nick) {
-            this.login = login;
-            this.pass = pass;
-            this.nick = nick;
+    public void createUser(String userName, String plainUserPassword) {
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(ADD_USER)) {
+            ps.setString(1, userName);
+            ps.setString(2, getPassword(plainUserPassword));
+            ps.setString(3, userName);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
     }
 
-    private List<Entry> entries;
+
+    private String getPassword(String plainPassword) {
+        String hashedPassword = null;
+        String passwordWithSalt = plainPassword + SUPER_SECRET_SALT;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            hashedPassword = bytesToHex(md.digest(passwordWithSalt.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return hashedPassword;
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+
+    private String doesUserExist(String userName, String cipheredPassword) {
+        String nickName = null;
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(GET_NICK_BY_LOGIN_PASS)) {
+            ps.setString(1, userName);
+            ps.setString(2, cipheredPassword);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            nickName = rs.getString("nickName");
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nickName;
+    }
+
 
     @Override
     public void start() {
@@ -37,18 +90,9 @@ public class BaseAuthService implements AuthService {
         System.out.println("[DEBUG] сервис аутентификации остановлен");
     }
 
-    public BaseAuthService() {
-        entries = new ArrayList<>();
-        entries.add(new Entry("Vadim", "2013", "Vadim"));
-        entries.add(new Entry("Alena", "2013", "Alena"));
-        entries.add(new Entry("Ksyna", "2013", "Ksy"));
-    }
 
     @Override
     public String getNickByLoginPass(String login, String pass) {
-        for (Entry en : entries) {
-            if (en.login.equals(login) && en.pass.equals(pass)) return en.nick;
-        }
-        return null;
+        return doesUserExist(login, getPassword(pass));
     }
 }

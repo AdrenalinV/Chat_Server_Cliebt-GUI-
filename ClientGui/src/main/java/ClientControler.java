@@ -39,7 +39,12 @@ public class ClientControler {
     private void setMessage(String msg) throws IOException {
         if (!isAutent) {
             String[] arr = msg.split(" ", 2);
-            network.sending(new AuthenticationRequest(arr[0], arr[1]));
+            if(arr.length==2){
+                network.sending(new AuthenticationRequest(arr[0], arr[1]));
+            }else {
+                Platform.runLater(() -> listView.getItems().add("Введите : Логин Пароль"));
+            }
+            textMessag.clear();
         } else {
             String recipient = (String) fxUsersList.getSelectionModel().getSelectedItem();
             network.sending(TextMessage.of(fxNickName.getText(), recipient, msg));
@@ -66,6 +71,7 @@ public class ClientControler {
                     Object msg = network.readMessage();
                     if (msg instanceof QuitRequest) {          // Сообщение на закрытие клиента
                         network.close();
+                        setInitialState();
                         break;
                     } else if (msg instanceof AuthenticationRequest) {   // запрос ника от сервера
                         AuthenticationRequest aMSG = (AuthenticationRequest) msg;
@@ -73,8 +79,9 @@ public class ClientControler {
                             isAutent = true;
                             fxNickName.setTextFill(Color.valueOf("LIME"));
                             Platform.runLater(() -> fxNickName.setText(aMSG.getNick()));
-                        } else {
-                            Platform.runLater(() -> listView.getItems().add("Отправьте: логин пароль"));
+                            Platform.runLater(() -> listView.getItems().clear());
+                        } else{
+                            Platform.runLater(() -> listView.getItems().add("Введите: логин пароль"));
                         }
                     } else if (msg instanceof TextMessage) {
                         TextMessage tMSG = (TextMessage) msg;
@@ -90,5 +97,13 @@ public class ClientControler {
                 Platform.runLater(() -> listView.getItems().add("Server was broken."));
             }
         }).start();
+    }
+    public void setInitialState(){
+        fxServer.setDisable(false);
+        fxPort.setDisable(false);
+        fxBtnConnect.setDisable(false);
+        fxBtnConnect.setTextFill(Color.valueOf("Red"));
+        textMessag.setDisable(true);
+        fxSendBtn.setDisable(true);
     }
 }

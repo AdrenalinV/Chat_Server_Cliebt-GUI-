@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class ServerChat {
@@ -9,11 +10,12 @@ public class ServerChat {
     private final ConcurrentLinkedDeque<ClientHandler> clients;
     private final AuthService authService;
 
+    // аутентификация
     public AuthService getAuthService() {
         return authService;
     }
 
-
+    // коннекты и бла бла бла
     public ServerChat(int port) {
         authService = new BaseAuthService();
         authService.start();
@@ -34,6 +36,7 @@ public class ServerChat {
         }
     }
 
+    // проверка свободен ник или нет
     public boolean isNickBusy(String nick) {
         for (ClientHandler o : clients) {
             if (o.getNickName().equals(nick)) {
@@ -60,22 +63,26 @@ public class ServerChat {
     public void removeClient(ClientHandler clientHandler) throws IOException {
         clients.remove(clientHandler);
         System.out.println("[DEBUG] client removed from broadcast server");
-        ArrayList<String> users = new ArrayList<>();
-        for (ClientHandler o : clients) {
-            users.add(o.getNickName());
-        }
-        broadCastMessage(new UserListMSG(users));
+        getUsersList();
+
     }
 
     // добавление клиента
     public void addClient(ClientHandler clientHandler) throws IOException {
         clients.add(clientHandler);
+        getUsersList();
+    }
+
+    // создание списка активных клиентов
+    private void getUsersList() throws IOException {
         ArrayList<String> users = new ArrayList<>();
         for (ClientHandler o : clients) {
             users.add(o.getNickName());
         }
+        Collections.sort(users);
         broadCastMessage(new UserListMSG(users));
     }
+
 
     // Общие сообщения
     public void broadCastMessage(Object msg) throws IOException {

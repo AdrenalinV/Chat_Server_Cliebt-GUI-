@@ -53,5 +53,6 @@ public class Network {
         out.close();
         in.close();
         socket.close();
+        instance=null;
     }
 }

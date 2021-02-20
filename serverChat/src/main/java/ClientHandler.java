@@ -10,6 +10,7 @@ public class ClientHandler implements Runnable {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private String nickName;
+    private static final long WAIT_TIME_MS = 120000L;
 
     public ClientHandler(ServerChat server, Socket socket) {
         this.server = server;
@@ -22,7 +23,19 @@ public class ClientHandler implements Runnable {
             Object msg;
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
-            authentication();
+
+            Thread tA = new Thread(() -> {
+                try {
+                    authentication();
+                } catch (IOException | ClassNotFoundException ioException) {
+                }
+            });
+            tA.start();
+            tA.join(WAIT_TIME_MS);
+            if (tA.isAlive()) {
+                sendMsg(TextMessage.of("Service", "Соединение разорвано."));
+                sendMsg(new QuitRequest());
+            }
             while (true) {
                 msg = in.readObject();
                 if (msg instanceof QuitRequest) {              // отправка при закрытие клиента
@@ -37,7 +50,7 @@ public class ClientHandler implements Runnable {
                     }
                 }
             }
-        } catch (ClassNotFoundException | IOException ioException) {
+        } catch (ClassNotFoundException | IOException | InterruptedException ioException) {
             System.err.println("Handled connection was broken");
             try {
                 server.removeClient(this);
@@ -52,11 +65,12 @@ public class ClientHandler implements Runnable {
         out.writeObject(msg);
         out.flush();
         while (true) {
+            sendMsg(TextMessage.of("Service", "Введите: Логин Пароль."));
             msg = in.readObject();
             if (msg instanceof AuthenticationRequest) {
                 AuthenticationRequest aMSG = (AuthenticationRequest) msg;
                 String nick = server.getAuthService().getNickByLoginPass(aMSG.getLogin(), aMSG.getPass());
-                if (nick != null) {
+                if (nick != null ) {
                     if (!server.isNickBusy(nick)) {
                         aMSG.setNick(nick);
                         aMSG.setStat(true);
@@ -70,8 +84,17 @@ public class ClientHandler implements Runnable {
                         sendMsg(aMSG);
 
                     }
-                } else {
-                    sendMsg(TextMessage.of("Service", "Неверные логин/пароль"));
+                } else if(!(aMSG.getLogin()==null)){
+                    switch (aMSG.getNewUser()){
+                        case 0:
+                            sendMsg(TextMessage.of("Service", "Пользователь не найден.\n Создать?: Yes/No"));
+                            aMSG.setNewUser(1);
+                            break;
+                        case 2:
+                            server.getAuthService().createUser(aMSG.getLogin(),aMSG.getPass());
+                            aMSG= new AuthenticationRequest();
+                            break;
+                    }
                     sendMsg(aMSG);
                 }
             }

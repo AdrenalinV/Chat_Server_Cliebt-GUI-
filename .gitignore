@@ -1,0 +1,6 @@
+*.db
+*.iml
+serverChat\target\classes\*.class
+CoreMsg\target\classes\*.class
+ClientGui\target\classes\*.class
+.idea\libraries\*.xml

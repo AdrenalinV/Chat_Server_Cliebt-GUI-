@@ -9,8 +9,11 @@
    <children>
       <VBox>
          <children>
-            <Label text="Users" textFill="WHITESMOKE" />
-            <ListView fx:id="fxUsersList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+            <Label text="Users" textFill="WHITESMOKE">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin></Label>
+            <ListView fx:id="fxUsersList" prefHeight="377.0" prefWidth="240.0" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets top="10.0" />
                </VBox.margin>
@@ -55,19 +58,24 @@
       <VBox HBox.hgrow="ALWAYS">
          <HBox alignment="CENTER_LEFT" prefHeight="31.0" prefWidth="480.0">
             <children>
-               <Label prefHeight="17.0" prefWidth="53.0" text="My nick:" textFill="WHITESMOKE">
-                  <HBox.margin>
-                     <Insets left="10.0" />
-                  </HBox.margin>
-               </Label>
-               <Label fx:id="fxNickName" text="none" textFill="#f88f8f">
+               <Label fx:id="fxLabelNick" prefHeight="17.0" prefWidth="53.0" text="My nick:" textFill="#f88f8f">
                   <font>
                      <Font name="System Bold" size="12.0" />
                   </font>
                </Label>
+               <TextField fx:id="fxNickName" editable="false" onMouseClicked="#onClick" promptText="none" styleClass="radius">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </TextField>
+               <Button fx:id="fxSaveNickName" onAction="#SaveNick" mnemonicParsing="false" styleClass="radius" text="Сохранить" visible="false">
+                  <HBox.margin>
+                     <Insets left="20.0" />
+                  </HBox.margin>
+               </Button>
             </children>
          </HBox>
-         <ListView fx:id="listView"  prefHeight="513.0" prefWidth="386.0" VBox.vgrow="ALWAYS">
+         <ListView fx:id="listView" prefHeight="505.0" prefWidth="372.0" VBox.vgrow="ALWAYS">
             <VBox.margin>
                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </VBox.margin>

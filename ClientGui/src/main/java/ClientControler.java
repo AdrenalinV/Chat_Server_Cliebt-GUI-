@@ -1,10 +1,12 @@
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 
@@ -16,12 +18,27 @@ public class ClientControler {
     public TextField textMessag;
     public ListView listView;
     public TextField fxPort;
-    public Label fxNickName;
+    public TextField fxNickName;
     public Button fxBtnConnect;
     public ListView fxUsersList;
     public Button fxSendBtn;
+    public Label fxLabelNick;
+    public Button fxSaveNickName;
     private Status Autent = Status.notAuthorized;
     private Network network;
+
+    public void onClick() {
+        fxNickName.setEditable(true);
+        fxSaveNickName.setVisible(true);
+    }
+
+
+    // изменение ника.
+    public void SaveNick() throws IOException {
+        fxNickName.setEditable(false);
+        fxSaveNickName.setVisible(false);
+        network.sending(UpdateNickRequest.of(fxNickName.getText()));
+    }
 
     enum Status {notAuthorized, requestNewUser, createUser, Authorized}
 
@@ -62,6 +79,7 @@ public class ClientControler {
                 String[] arrUser = msg.split(" ", 2);
                 if (arrUser.length == 2) {
                     network.sending(CreateUserRequest.of(arrUser[0], arrUser[1]));
+                    Platform.runLater(() -> listView.getItems().add("Войдите с новыми учетными данными"));
                     Autent = Status.notAuthorized;
                 } else {
                     Platform.runLater(() -> listView.getItems().add("Введите : Логин Пароль"));
@@ -103,7 +121,7 @@ public class ClientControler {
                         AuthenticationRequest aMSG = (AuthenticationRequest) msg;
                         if (aMSG.isStat()) {
                             Autent = Status.Authorized;
-                            fxNickName.setTextFill(Color.valueOf("LIME"));
+                            fxLabelNick.setTextFill(Color.valueOf("LIME"));
                             Platform.runLater(() -> fxNickName.setText(aMSG.getNick()));
                             Platform.runLater(() -> listView.getItems().clear());
                         }

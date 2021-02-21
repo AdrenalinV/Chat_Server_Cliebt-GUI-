@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.sql.SQLException;
 
 public class ClientHandler implements Runnable {
     private final ServerChat server;
@@ -47,6 +48,13 @@ public class ClientHandler implements Runnable {
                         server.privateSendMessage(tMSG);
                     } else {
                         server.broadCastMessage(tMSG);
+                    }
+                }else if (msg instanceof UpdateNickRequest){
+                    UpdateNickRequest uMSG = (UpdateNickRequest) msg;
+                    if(!server.isNickBusy(uMSG.getNewNick())){
+                        server.getAuthService().updateNickName(uMSG.getNewNick(), this.nickName);
+                        this.nickName= uMSG.getNewNick();
+                        server.getUsersList();
                     }
                 }
             }

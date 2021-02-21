@@ -79,7 +79,7 @@ public class ServerChat {
     }
 
     // создание списка активных клиентов
-    private void getUsersList() throws IOException {
+    public void getUsersList() throws IOException {
         ArrayList<String> users = new ArrayList<>();
         for (ClientHandler o : clients) {
             users.add(o.getNickName());

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" styleClass="dark-gray-backcolor" stylesheets="@client.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientControler">
+   <children>
+      <VBox>
+         <children>
+            <Label text="Users" textFill="WHITESMOKE">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin></Label>
+            <ListView fx:id="fxUsersList" prefHeight="377.0" prefWidth="240.0" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </ListView>
+            <Label text="Server" textFill="WHITESMOKE">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </Label>
+            <TextField fx:id="fxServer" styleClass="radius" stylesheets="@client.css" text="localhost">
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+            </TextField>
+            <Label text="Port" textFill="WHITESMOKE">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </Label>
+            <TextField fx:id="fxPort" styleClass="radius" stylesheets="@client.css" text="8189">
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+            </TextField>
+            <HBox alignment="CENTER_RIGHT" prefHeight="77.0" prefWidth="158.0">
+               <children>
+                  <Button fx:id="fxBtnConnect" mnemonicParsing="false" onAction="#getConnect" styleClass="radius" stylesheets="@client.css" text="Connect" textFill="#f56464">
+                     <HBox.margin>
+                        <Insets bottom="10.0" top="10.0" />
+                     </HBox.margin>
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+         <HBox.margin>
+            <Insets left="10.0" />
+         </HBox.margin>
+      </VBox>
+      <VBox HBox.hgrow="ALWAYS">
+         <HBox alignment="CENTER_LEFT" prefHeight="31.0" prefWidth="480.0">
+            <children>
+               <Label fx:id="fxLabelNick" prefHeight="17.0" prefWidth="53.0" text="My nick:" textFill="#f88f8f">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Label>
+               <TextField fx:id="fxNickName" editable="false" onMouseClicked="#onClick" promptText="none" styleClass="radius">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </TextField>
+               <Button fx:id="fxSaveNickName" onAction="#SaveNick" mnemonicParsing="false" styleClass="radius" text="Сохранить" visible="false">
+                  <HBox.margin>
+                     <Insets left="20.0" />
+                  </HBox.margin>
+               </Button>
+            </children>
+         </HBox>
+         <ListView fx:id="listView" prefHeight="505.0" prefWidth="372.0" VBox.vgrow="ALWAYS">
+            <VBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </VBox.margin>
+         </ListView>
+         <HBox prefHeight="53.0" prefWidth="430.0">
+            <children>
+               <TextField fx:id="textMessag" onKeyPressed="#onKeyPress" HBox.hgrow="ALWAYS">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin></TextField>
+               <VBox alignment="CENTER" prefHeight="45.0" prefWidth="75.0" HBox.hgrow="NEVER">
+                  <children>
+                     <Button fx:id="fxSendBtn" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" onAction="#sendMsg" prefWidth="75.0" styleClass="radius" text="Send" textAlignment="CENTER" VBox.vgrow="NEVER" />
+                  </children>
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin>
+               </VBox>
+            </children>
+         </HBox>
+         <HBox.margin>
+            <Insets left="10.0" />
+         </HBox.margin>
+      </VBox>
+   </children>
+</HBox>

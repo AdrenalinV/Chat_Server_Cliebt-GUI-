@@ -70,7 +70,7 @@ public class ClientHandler implements Runnable {
             if (msg instanceof AuthenticationRequest) {
                 AuthenticationRequest aMSG = (AuthenticationRequest) msg;
                 String nick = server.getAuthService().getNickByLoginPass(aMSG.getLogin(), aMSG.getPass());
-                if (nick != null ) {
+                if (nick != null) {
                     if (!server.isNickBusy(nick)) {
                         aMSG.setNick(nick);
                         aMSG.setStat(true);
@@ -84,19 +84,23 @@ public class ClientHandler implements Runnable {
                         sendMsg(aMSG);
 
                     }
-                } else if(!(aMSG.getLogin()==null)){
-                    switch (aMSG.getNewUser()){
-                        case 0:
-                            sendMsg(TextMessage.of("Service", "Пользователь не найден.\n Создать?: Yes/No"));
-                            aMSG.setNewUser(1);
-                            break;
-                        case 2:
-                            server.getAuthService().createUser(aMSG.getLogin(),aMSG.getPass());
-                            aMSG= new AuthenticationRequest();
-                            break;
+                } else {
+                    if (server.getAuthService().existUser(aMSG.getLogin())) {
+                        sendMsg(TextMessage.of("Service", "Неверный пароль."));
+                    } else {
+                        sendMsg(TextMessage.of("Service", "Пользователь не найден."));
+                        sendMsg(aMSG);
+                        sendMsg(CreateUserRequest.of());
                     }
-                    sendMsg(aMSG);
                 }
+            } else if (msg instanceof QuitRequest) {
+                sendMsg(msg);
+            } else if (msg instanceof CreateUserRequest) {
+                CreateUserRequest cMSG = (CreateUserRequest) msg;
+                if (cMSG.getLogin() != null && cMSG.getPassword() != null) {
+                    server.getAuthService().createUser(cMSG.getLogin(), cMSG.getPassword());
+                }
+                sendMsg(new AuthenticationRequest());
             }
         }
     }

@@ -2,31 +2,26 @@
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
+
 
 interface AuthService {
-    void start();
+    void start() throws SQLException;
 
     String getNickByLoginPass(String login, String pass);
 
     void createUser(String userName, String plainUserPassword);
 
+    boolean existUser(String userName);
+
     void stop();
 }
 
 public class BaseAuthService implements AuthService {
-    /*CREATE TABLE IF NOT EXISTS users
-    (id INTEGER  PRIMARY KEY AUTOINCREMENT NOT NULL,
-    login TEXT UNIQUE NOT NULL,
-    pass TEXT NOT NULL,
-    nickName TEXT UNIQUE NOT NULL);*/
-    private static final String ADD_USER = "INSERT INTO users(login, pass, nickName) VALUES (?, ?, ?)";
-    private static final String GET_NICK_BY_LOGIN_PASS = "SELECT nickName FROM users WHERE login=? AND pass=?";
+    private static final String INIT_DB = "CREATE TABLE IF NOT EXISTS users (id INTEGER  PRIMARY KEY AUTOINCREMENT NOT NULL, login TEXT UNIQUE NOT NULL, pass TEXT NOT NULL )";
+    private static final String EXIST_USER = "SELECT * FROM users WHERE login=?";
+    private static final String ADD_USER = "INSERT INTO users(login, pass) VALUES (?, ?)";
+    private static final String GET_NICK_BY_LOGIN_PASS = "SELECT * FROM users WHERE login=? AND pass=?";
     private static final String SUPER_SECRET_SALT = "MY_MOM_MAKES_COFFEE";
 
     public void createUser(String userName, String plainUserPassword) {
@@ -34,7 +29,6 @@ public class BaseAuthService implements AuthService {
              PreparedStatement ps = connection.prepareStatement(ADD_USER)) {
             ps.setString(1, userName);
             ps.setString(2, getPassword(plainUserPassword));
-            ps.setString(3, userName);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -63,26 +57,45 @@ public class BaseAuthService implements AuthService {
     }
 
 
-    private String doesUserExist(String userName, String cipheredPassword) {
-        String nickName = null;
+    private boolean doesUserExist(String userName, String cipheredPassword) {
+        boolean isAuthorized=false;
         try (Connection connection = DataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(GET_NICK_BY_LOGIN_PASS)) {
             ps.setString(1, userName);
             ps.setString(2, cipheredPassword);
             ResultSet rs = ps.executeQuery();
-            rs.next();
-            nickName = rs.getString("nickName");
+            isAuthorized=rs.next();
             rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return nickName;
+        return isAuthorized;
+    }
+
+    @Override
+    public boolean existUser(String userName){
+        boolean isExist=false;
+        try(Connection con=DataSource.getConnection();
+            PreparedStatement ps = con.prepareStatement(EXIST_USER)){
+            ps.setString(1,userName);
+            ResultSet rs = ps.executeQuery();
+            isExist=rs.next();
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return isExist;
     }
 
 
     @Override
-    public void start() {
+    public void start()throws SQLException {
+        try (Connection con = DataSource.getConnection();
+            Statement st = con.createStatement()){
+            st.executeUpdate(INIT_DB);
         System.out.println("[DEBUG] сервис аутентификации запущен");
+        }
+
     }
 
     @Override
@@ -93,6 +106,9 @@ public class BaseAuthService implements AuthService {
 
     @Override
     public String getNickByLoginPass(String login, String pass) {
-        return doesUserExist(login, getPassword(pass));
+        if (doesUserExist(login, getPassword(pass))){
+            return login;
+        }
+        return null;
     }
 }

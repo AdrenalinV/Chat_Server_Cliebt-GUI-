@@ -16,8 +16,8 @@ public class ClientApp extends Application {
         primaryStage.setOnCloseRequest(request -> {
             try {
                 System.out.println("[DEBUG] disconnect");
-                Network network = Network.getInstance();
-                if (network != null) {
+                if (Network.isLive()) {
+                    Network network = Network.getInstance();
                     network.sending(new QuitRequest());
                 }
             } catch (IOException ioException) {

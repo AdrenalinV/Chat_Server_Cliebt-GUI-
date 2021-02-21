@@ -1,24 +1,30 @@
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 
 public class DataSource {
-    private static final HikariConfig config = new HikariConfig();
-    private static final HikariDataSource ds;
+    private static final String URL="jdbc:sqlite:users.db";
 
     static {
-        config.setJdbcUrl("jdbc:sqlite:users.db");
-        ds = new HikariDataSource(config);
+
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Database Driver initialization Error");
+        }
+
     }
 
     private DataSource() {
     }
 
     public static Connection getConnection() throws SQLException {
-        return ds.getConnection();
+        return DriverManager.getConnection(URL);
+
     }
 
 }

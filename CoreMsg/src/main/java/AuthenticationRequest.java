@@ -3,26 +3,16 @@ public class AuthenticationRequest extends AbstractMSG {
     private String pass;
     private String nick;
     private Boolean stat;
-    private int newUser;
-
-    public void setNewUser(int newUser) {
-        this.newUser = newUser;
-    }
-
-    public int getNewUser() {
-        return newUser;
-    }
 
     public AuthenticationRequest() {
         this.stat = false;
-        newUser=0;
+
     }
 
     public AuthenticationRequest(String login, String pass) {
         this.login = login;
         this.pass = pass;
         this.stat = false;
-        newUser=0;
     }
 
     public String getLogin() {

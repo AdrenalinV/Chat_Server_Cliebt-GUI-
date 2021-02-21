@@ -55,4 +55,7 @@ public class Network {
         socket.close();
         instance=null;
     }
+    public static boolean isLive(){
+        return instance!=null;
+    }
 }

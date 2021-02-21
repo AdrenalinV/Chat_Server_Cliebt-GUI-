@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -16,7 +17,7 @@ public class ServerChat {
     }
 
     // коннекты и бла бла бла
-    public ServerChat(int port) {
+    public ServerChat(int port) throws SQLException {
         authService = new BaseAuthService();
         authService.start();
         clients = new ConcurrentLinkedDeque<>();
@@ -55,7 +56,11 @@ public class ServerChat {
         if (port == -1) {
             port = DEFAULT_PORT;
         }
-        new ServerChat(port);
+        try {
+            new ServerChat(port);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 

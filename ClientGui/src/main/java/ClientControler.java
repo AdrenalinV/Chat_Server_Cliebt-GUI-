@@ -16,11 +16,11 @@ import java.io.IOException;
 public class ClientControler {
     public TextField fxServer;
     public TextField textMessag;
-    public ListView listView;
+    public ListView<String> listView;
     public TextField fxPort;
     public TextField fxNickName;
     public Button fxBtnConnect;
-    public ListView fxUsersList;
+    public ListView<String> fxUsersList;
     public Button fxSendBtn;
     public Label fxLabelNick;
     public Button fxSaveNickName;
@@ -114,6 +114,7 @@ public class ClientControler {
                 while (true) {
                     Object msg = network.readMessage();
                     if (msg instanceof QuitRequest) {          // Сообщение на закрытие клиента
+                        HistoryChat.writeHistory(listView.getItems(),fxNickName.getText());
                         network.close();
                         setInitialState();
                         break;
@@ -124,6 +125,7 @@ public class ClientControler {
                             fxLabelNick.setTextFill(Color.valueOf("LIME"));
                             Platform.runLater(() -> fxNickName.setText(aMSG.getNick()));
                             Platform.runLater(() -> listView.getItems().clear());
+                            Platform.runLater(() -> listView.getItems().addAll(HistoryChat.readHistory(fxNickName.getText(),100)));
                         }
                     } else if (msg instanceof TextMessage) {
                         TextMessage tMSG = (TextMessage) msg;

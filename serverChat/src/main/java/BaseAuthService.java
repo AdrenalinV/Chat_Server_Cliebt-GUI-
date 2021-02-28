@@ -85,7 +85,7 @@ public class BaseAuthService implements AuthService {
             nickName = rs.getString("nickName");
             rs.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            return null;
         }
         return nickName;
     }

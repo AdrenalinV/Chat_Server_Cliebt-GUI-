@@ -11,12 +11,8 @@
     <modules>
         <module>ClientGui</module>
         <module>serverChat</module>
-<<<<<<< HEAD
         <module>CoreMsg</module>
-=======
->>>>>>> 80e527c (set up progect)
     </modules>
-
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>

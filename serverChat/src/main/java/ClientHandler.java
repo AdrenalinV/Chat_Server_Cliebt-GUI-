@@ -1,11 +1,15 @@
 
+import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.sql.SQLException;
-
+@Log4j2
 public class ClientHandler implements Runnable {
+    public static final Logger slog = LogManager.getLogger("Secure");
     private final ServerChat server;
     private final Socket socket;
     private ObjectOutputStream out;
@@ -34,12 +38,16 @@ public class ClientHandler implements Runnable {
             tA.start();
             tA.join(WAIT_TIME_MS);
             if (tA.isAlive()) {
+                log.trace("timeout expired");
                 sendMsg(TextMessage.of("Service", "Соединение разорвано."));
                 sendMsg(new QuitRequest());
             }
+            org.apache.logging.log4j.ThreadContext.put("user", nickName);
+            log.info("authentication completed");
             while (true) {
                 msg = in.readObject();
                 if (msg instanceof QuitRequest) {              // отправка при закрытие клиента
+                    log.trace("request quit");
                     out.writeObject(msg);
                     out.flush();
                 } else if (msg instanceof TextMessage) {      //  сообщения
@@ -55,11 +63,13 @@ public class ClientHandler implements Runnable {
                         server.getAuthService().updateNickName(uMSG.getNewNick(), this.nickName);
                         this.nickName= uMSG.getNewNick();
                         server.getUsersList();
+                        log.info("Update nickName");
+                        org.apache.logging.log4j.ThreadContext.put("user", nickName);
                     }
                 }
             }
         } catch (ClassNotFoundException | IOException | InterruptedException ioException) {
-            System.err.println("Handled connection was broken");
+            log.debug("user connection was broken");
             try {
                 server.removeClient(this);
             } catch (IOException e) {
@@ -85,18 +95,22 @@ public class ClientHandler implements Runnable {
                         out.writeObject(aMSG);
                         out.flush();
                         nickName = nick;
+                        slog.info("authentication completed User: {} nikName: {}",aMSG.getLogin(),nickName);
                         server.addClient(this);
                         return;
                     } else {
                         sendMsg(TextMessage.of("Service", "Учетная запись уже используется"));
+                        slog.warn("authentication error User: {} already in use",aMSG.getLogin());
                         sendMsg(aMSG);
 
                     }
                 } else {
                     if (server.getAuthService().existUser(aMSG.getLogin())) {
                         sendMsg(TextMessage.of("Service", "Неверный пароль."));
+                        slog.warn("authentication error User: {} password: {}",aMSG.getLogin(),aMSG.getPass());
                     } else {
                         sendMsg(TextMessage.of("Service", "Пользователь не найден."));
+                        slog.warn("authentication error User: {} not found",aMSG.getLogin());
                         sendMsg(aMSG);
                         sendMsg(CreateUserRequest.of());
                     }

@@ -1,3 +1,5 @@
+import lombok.extern.log4j.Log4j2;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -5,7 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedDeque;
-
+@Log4j2
 public class ServerChat {
     private static final int DEFAULT_PORT = 8189;
     private final ConcurrentLinkedDeque<ClientHandler> clients;
@@ -24,12 +26,12 @@ public class ServerChat {
         try (ServerSocket server = new ServerSocket(port)) {
             while (true) {
                 Socket socket = server.accept();
-                System.out.println("[DEBUG] Client accepted");
+                log.debug("Client accepted");
                 ClientHandler handler = new ClientHandler(this, socket);
                 new Thread(handler).start();
             }
         } catch (IOException e) {
-            System.err.println("Server was broken");
+            log.fatal("Server was broken");
         } finally {
             if (authService != null) {
                 authService.stop();
@@ -67,7 +69,7 @@ public class ServerChat {
     // удаление клиента
     public void removeClient(ClientHandler clientHandler) throws IOException {
         clients.remove(clientHandler);
-        System.out.println("[DEBUG] client removed from broadcast server");
+        log.debug("Client removed from broadcast server");
         getUsersList();
 
     }
